@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { JwtService } from 'src/jwt/jwt.service';
 import { Repository } from 'typeorm';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto, UserOutput } from './dto/create-user.dto';
+import { LoginDto, LoginOutput } from './dto/login.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 
@@ -10,29 +12,102 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private readonly jwtService: JwtService,
   ) {}
 
-  create(createUserDto: CreateUserDto) {
-    return this.userRepository.save(createUserDto);
+  async getAllUsers(): Promise<UserOutput> {
+    try {
+      const users = await this.userRepository.find();
+      return { success: true, users };
+    } catch (error) {
+      return { success: false, error };
+    }
   }
 
-  findAll() {
-    return this.userRepository.find();
+  async createUser({
+    email,
+    password,
+    role,
+  }: CreateUserDto): Promise<UserOutput> {
+    try {
+      const isUser = await this.userRepository.findOneBy({ email });
+      if (isUser) {
+        return {
+          success: false,
+          error: '이미 같은 이메일은 가진 사용자가 존재합니다.',
+        };
+      }
+
+      const newUser = this.userRepository.create({
+        email,
+        password,
+        role,
+      });
+      console.log(newUser);
+      await this.userRepository.save(newUser);
+      return { success: true };
+    } catch (error) {
+      return { success: false, error };
+    }
   }
 
-  findOneByUUID(id: string) {
-    return this.userRepository.findOneBy({ userId: id });
+  async updateUser({
+    email,
+    password,
+    role,
+  }: UpdateUserDto): Promise<UserOutput> {
+    try {
+      const user = this.userRepository.create({
+        email,
+        password,
+        role,
+      });
+
+      this.userRepository.update({ email }, user);
+      return { success: true };
+    } catch (error) {
+      return { success: false, error };
+    }
   }
 
-  findOneById(id: string) {
-    return this.userRepository.findOneBy({ id });
+  async deleteUser(email: string): Promise<UserOutput> {
+    try {
+      this.userRepository.delete({ email });
+      return { success: true };
+    } catch (error) {
+      return { success: false, error };
+    }
   }
 
-  update(id: string, updateUserDto: UpdateUserDto) {
-    return this.userRepository.update({ userId: id }, updateUserDto);
-  }
+  async login({ email, password }: LoginDto): Promise<LoginOutput> {
+    try {
+      const user = await this.userRepository.findOneBy({ email });
+      if (!user) {
+        return {
+          success: false,
+          error: 'Email을 정확히 입력해주세요.',
+        };
+      }
 
-  remove(id: string) {
-    return this.userRepository.delete({ userId: id });
+      // TODO: Auth로 이동
+      const isValidate = await user.comparePassword(password);
+      if (!isValidate) {
+        return {
+          success: false,
+          error: '비밀번호가 올바르지 않습니다.',
+        };
+      }
+
+      const token = this.jwtService.sign({ id: user.id });
+      return {
+        success: true,
+        token,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error,
+      };
+    }
   }
 }

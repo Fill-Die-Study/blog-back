@@ -1,34 +1,43 @@
-import {
-  Column,
-  CreateDateColumn,
-  DeleteDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  Unique,
-  UpdateDateColumn,
-} from 'typeorm';
+import { InternalServerErrorException } from '@nestjs/common';
+import { compare, hash } from 'bcrypt';
+import { IsEmail, IsEnum, IsString } from 'class-validator';
+import { CommonEntity } from 'src/common/entities/common.entity';
+import { BeforeInsert, Column, Entity, PrimaryColumn } from 'typeorm';
+
+enum UserRole {
+  USER,
+  ADMIN,
+}
 
 @Entity('user')
-@Unique(['id'])
-export class User {
-  @PrimaryGeneratedColumn('uuid')
-  userId: string;
+export class User extends CommonEntity {
+  @Column()
+  @IsEmail()
+  email: string;
 
-  @Column({ type: 'varchar', length: 50 })
-  id: string;
-
-  @Column({ type: 'varchar', length: 30 })
-  name: string;
-
-  @Column({ type: 'varchar', length: 255 })
+  @Column()
+  @IsString()
   password: string;
 
-  @CreateDateColumn()
-  createAt: Date;
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    nullable: true,
+    default: UserRole.USER,
+  })
+  @IsEnum(UserRole)
+  role: UserRole;
 
-  @UpdateDateColumn()
-  updateAt: Date;
+  @BeforeInsert()
+  async hashPassword() {
+    try {
+      this.password = await hash(this.password, 10);
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
+  }
 
-  @DeleteDateColumn()
-  deleteAt: Date | null;
+  comparePassword(inputPass: string) {
+    return compare(inputPass, this.password);
+  }
 }

@@ -1,17 +1,14 @@
-import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { PickType } from '@nestjs/mapped-types';
+import { CommonOutput } from 'src/common/dtos/commonOutput.dto';
+import { User } from '../entities/user.entity';
 
-export class CreateUserDto {
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(50)
-  id: string;
+export class CreateUserDto extends PickType(User, [
+  'email',
+  'password',
+  'role',
+]) {}
 
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(255)
-  password: string;
-
-  @IsString()
-  @MaxLength(30)
-  name: string;
+export class UserOutput extends CommonOutput {
+  users?: User[];
+  user?: User;
 }

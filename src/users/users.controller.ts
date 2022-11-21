@@ -9,45 +9,36 @@ import {
   ParseUUIDPipe,
   Request,
   UseGuards,
+  ValidationPipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { LoginDto } from './dto/login.dto';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
-  }
-
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  getAllUsers() {
+    return this.usersService.getAllUsers();
   }
 
-  @Get(':uuid')
-  findOneByUUID(@Param('uuid', ParseUUIDPipe) uuid: string) {
-    return this.usersService.findOneByUUID(uuid);
-  }
-
-  @Get(':id')
-  findOneById(@Param('id', ParseUUIDPipe) id: string) {
-    return this.usersService.findOneById(id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() updateUserDto: UpdateUserDto,
+  @Post()
+  createUser(
+    @Body()
+    { email, password, role }: CreateUserDto,
   ) {
-    return this.usersService.update(id, updateUserDto);
+    return this.usersService.createUser({
+      email,
+      password,
+      role,
+    });
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
+  @Post('/login')
+  login(@Body() { email, password }: LoginDto) {
+    return this.usersService.login({ email, password });
   }
 }
