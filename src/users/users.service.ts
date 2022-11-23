@@ -24,6 +24,15 @@ export class UsersService {
     }
   }
 
+  async getUserById(id: number): Promise<UserOutput> {
+    try {
+      const user = await this.userRepository.findOneBy({ id });
+      return { success: true, user };
+    } catch (error) {
+      return { success: false, error };
+    }
+  }
+
   async createUser({
     email,
     password,

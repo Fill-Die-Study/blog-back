@@ -7,11 +7,8 @@ import {
 import * as Joi from 'joi';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module';
-import { AuthModule } from './auth/auth.module';
-import { AppController } from './app.controller';
 import { ConfigModule } from '@nestjs/config';
 
-import { CommonModule } from './common/common.module';
 import { JwtModule } from './jwt/jwt.module';
 import { JwtMiddleware } from './jwt/jwt.middleware';
 
@@ -29,6 +26,7 @@ import { JwtMiddleware } from './jwt/jwt.middleware';
         DATABASE_PASSWORD: Joi.string().required(),
         DATABASE_NAME: Joi.string().required(),
         JWT_SECRET: Joi.string().required(),
+        EXPRIES_IN: Joi.string(),
       }),
     }),
     TypeOrmModule.forRoot({
@@ -42,18 +40,20 @@ import { JwtMiddleware } from './jwt/jwt.middleware';
       logging: true,
       synchronize: process.env.NODE_ENV === 'dev',
     }),
-    JwtModule.forRoot({ privateKey: process.env.JWT_SECRET }),
-    CommonModule,
+    JwtModule.forRoot({
+      privateKey: process.env.JWT_SECRET,
+      expires_in: process.env.EXPIRES_IN,
+    }),
     UsersModule,
     // AuthModule,
     // PostModule,
   ],
-  controllers: [AppController],
+  controllers: [],
   providers: [],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(JwtMiddleware).forRoutes({
+    consumer.apply(JwtMiddleware).exclude('/users/login').forRoutes({
       path: '*',
       method: RequestMethod.ALL,
     });

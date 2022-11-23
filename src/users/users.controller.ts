@@ -7,14 +7,17 @@ import {
   Param,
   Delete,
   ParseUUIDPipe,
-  Request,
   UseGuards,
   ValidationPipe,
+  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto, UserOutput } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { LoginDto } from './dto/login.dto';
+import { Request } from 'express';
+import { User } from './entities/user.entity';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller('users')
 export class UsersController {
@@ -40,5 +43,15 @@ export class UsersController {
   @Post('/login')
   login(@Body() { email, password }: LoginDto) {
     return this.usersService.login({ email, password });
+  }
+
+  @Get('/profile')
+  @UseGuards(AuthGuard)
+  profile(@Req() req: Request): UserOutput {
+    if (!req.user) {
+      return { success: false };
+    }
+
+    return { success: true, user: req.user as User };
   }
 }

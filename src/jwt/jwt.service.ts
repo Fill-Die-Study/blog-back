@@ -10,10 +10,12 @@ export class JwtService {
   ) {}
 
   sign(payload: object) {
-    return jwt.sign(payload, this.options.privateKey);
+    return jwt.sign(payload, this.options.privateKey, {
+      expiresIn: this.options.expires_in || '60s',
+    });
   }
 
-  //   decode(token: string) {
-  //     return jwt.decode(token, this.options.privateKey);
-  //   }
+  verify(token: string) {
+    return jwt.verify(token, this.options.privateKey);
+  }
 }
