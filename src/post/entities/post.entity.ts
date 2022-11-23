@@ -1,37 +1,20 @@
-import { IsNotEmpty, IsNumber, IsString, MaxLength } from 'class-validator';
+import { IsString } from 'class-validator';
+import { CommonEntity } from 'src/common/entities/common.entity';
 import { User } from 'src/users/entities/user.entity';
-import {
-  Column,
-  CreateDateColumn,
-  DeleteDateColumn,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, Entity, ManyToOne } from 'typeorm';
 
 @Entity()
-export class Post {
-  @PrimaryGeneratedColumn('increment')
-  @IsNumber()
-  @IsNotEmpty()
-  id: number;
+export class Post extends CommonEntity {
+  @Column()
+  @IsString()
+  title: string;
 
-  @Column({ type: 'varchar' })
+  @Column()
   @IsString()
   content: string;
 
-  //   @ManyToOne(() => User, (user) => user.posts)
-  //   @JoinColumn({ name: 'user_id' })
-  //   author: User['userId'];
+  @ManyToOne(() => User, (user) => user.posts)
+  user: User;
 
-  @CreateDateColumn()
-  createAt: Date;
-
-  @UpdateDateColumn()
-  updateAt: Date;
-
-  @DeleteDateColumn()
-  deleteAt: Date | null;
+  // TODO: content html script 필터링 기능
 }

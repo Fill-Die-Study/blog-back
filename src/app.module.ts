@@ -11,6 +11,7 @@ import { ConfigModule } from '@nestjs/config';
 
 import { JwtModule } from './jwt/jwt.module';
 import { JwtMiddleware } from './jwt/jwt.middleware';
+import { PostModule } from './post/post.module';
 
 @Module({
   imports: [
@@ -45,8 +46,7 @@ import { JwtMiddleware } from './jwt/jwt.middleware';
       expires_in: process.env.EXPIRES_IN,
     }),
     UsersModule,
-    // AuthModule,
-    // PostModule,
+    PostModule,
   ],
   controllers: [],
   providers: [],

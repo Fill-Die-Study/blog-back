@@ -7,49 +7,95 @@ import {
   Param,
   Delete,
   UseGuards,
-  Request,
+  Req,
 } from '@nestjs/common';
+import { Request } from 'express';
+import { AuthGuard } from 'src/auth/auth.guard';
+import { User } from 'src/users/entities/user.entity';
+import { CreatePostDto, PostOutput } from './dto/create-post.dto';
 import { PostService } from './post.service';
-import { CreatePostDto } from './dto/create-post.dto';
-import { UpdatePostDto } from './dto/update-post.dto';
-import { AuthGuard } from '@nestjs/passport';
 
-@Controller('post')
+@Controller('posts')
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
-  // @UseGuards(AuthGuard('jwt'))
-  // @Post()
-  // create(@Body() createPostDto: CreatePostDto, @Request() req) {
-  //   return this.postService.create({
-  //     ...createPostDto,
-  //     author: req.user.user_id,
-  //   });
-  // }
-
-  // @UseGuards(AuthGuard('jwt'))
-  // @Get('/me')
-  // findMyPosts(@Request() req) {
-  //   return this.postService.findMyPosts(req.user);
-  // }
-
   @Get()
-  findAll() {
-    return this.postService.findAll();
+  getAllPost() {
+    return this.postService.getAllPost();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.postService.findOne(+id);
+  @Get('/me')
+  @UseGuards(AuthGuard)
+  async getAllMyPost(@Req() req: Request): Promise<PostOutput> {
+    const user = req.user as User;
+    return this.postService.getAllMyPost(user.id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
-    return this.postService.update(+id, updatePostDto);
+  @Get('/:id')
+  getPostById(@Param('id') id: number): Promise<PostOutput> {
+    return this.postService.getPostById(id);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.postService.remove(+id);
+  @Post()
+  @UseGuards(AuthGuard)
+  createPost(@Body() { title, content }: CreatePostDto, @Req() req: Request) {
+    return this.postService.createPost({
+      user: req.user as User,
+      title,
+      content,
+    });
+  }
+
+  @Patch('/:id')
+  @UseGuards(AuthGuard)
+  async updatePost(
+    @Param('id') id: number,
+    @Body() { title, content }: CreatePostDto,
+    @Req() req: Request,
+  ): Promise<PostOutput> {
+    const { success, post } = await this.postService.getPostById(id);
+    const user = req.user as User;
+    if (!success) {
+      return {
+        success,
+        error: '게시글을 찾을 수 없습니다.',
+      };
+    }
+
+    if (post.user.id !== user.id) {
+      return {
+        success,
+        error: '권한이 없습니다.',
+      };
+    }
+
+    return this.postService.updatePost({
+      id,
+      user,
+      title,
+      content,
+    });
+  }
+
+  @Delete('/:id')
+  @UseGuards(AuthGuard)
+  async deletePost(@Param('id') id: number, @Req() req: Request) {
+    const { success, post } = await this.postService.getPostById(id);
+    const user = req.user as User;
+    if (!success) {
+      return {
+        success,
+        error: '게시글을 찾을 수 없습니다.',
+      };
+    }
+
+    if (post.user.id !== user.id) {
+      return {
+        success,
+        error: '권한이 없습니다.',
+      };
+    }
+
+    return this.postService.deletePost(id);
   }
 }

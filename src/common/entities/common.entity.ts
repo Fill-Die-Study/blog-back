@@ -2,9 +2,7 @@ import { IsNumber } from 'class-validator';
 import {
   CreateDateColumn,
   DeleteDateColumn,
-  Entity,
   PrimaryGeneratedColumn,
-  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 

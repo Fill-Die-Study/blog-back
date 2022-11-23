@@ -2,7 +2,8 @@ import { InternalServerErrorException } from '@nestjs/common';
 import { compare, hash } from 'bcrypt';
 import { IsEmail, IsEnum, IsString } from 'class-validator';
 import { CommonEntity } from 'src/common/entities/common.entity';
-import { BeforeInsert, Column, Entity, PrimaryColumn } from 'typeorm';
+import { BeforeInsert, Column, Entity, OneToMany } from 'typeorm';
+import { Post } from '../../post/entities/post.entity';
 
 enum UserRole {
   USER,
@@ -27,6 +28,9 @@ export class User extends CommonEntity {
   })
   @IsEnum(UserRole)
   role: UserRole;
+
+  @OneToMany(() => Post, (post) => post.user)
+  posts: Post[];
 
   @BeforeInsert()
   async hashPassword() {
