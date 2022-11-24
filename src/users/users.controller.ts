@@ -48,10 +48,16 @@ export class UsersController {
   @Get('/profile')
   @UseGuards(AuthGuard)
   profile(@Req() req: Request): UserOutput {
-    if (!req.user) {
-      return { success: false };
-    }
-
     return { success: true, user: req.user as User };
+  }
+
+  @Patch('/profile')
+  @UseGuards(AuthGuard)
+  editProfile(
+    @Req() req: Request,
+    @Body() body: UpdateUserDto,
+  ): Promise<UserOutput> {
+    const { id } = req.user as User;
+    return this.usersService.updateUser(id, body);
   }
 }

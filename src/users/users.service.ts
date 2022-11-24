@@ -60,19 +60,21 @@ export class UsersService {
     }
   }
 
-  async updateUser({
-    email,
-    password,
-    role,
-  }: UpdateUserDto): Promise<UserOutput> {
+  async updateUser(
+    id: number,
+    updateUserDto: UpdateUserDto,
+  ): Promise<UserOutput> {
     try {
-      const user = this.userRepository.create({
-        email,
-        password,
-        role,
+      const user = await this.userRepository.findOneBy({ id });
+      if (!user) {
+        return { success: false, error: '유저를 찾을 수 없습니다.' };
+      }
+
+      await this.userRepository.save({
+        ...user,
+        ...updateUserDto,
       });
 
-      this.userRepository.update({ email }, user);
       return { success: true };
     } catch (error) {
       return { success: false, error };
