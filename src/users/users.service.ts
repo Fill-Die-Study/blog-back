@@ -54,7 +54,7 @@ export class UsersService {
       });
       console.log(newUser);
       await this.userRepository.save(newUser);
-      return { success: true };
+      return { success: true, user: newUser };
     } catch (error) {
       return { success: false, error };
     }

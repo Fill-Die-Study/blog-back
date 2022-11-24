@@ -1,4 +1,4 @@
-import { PickType } from '@nestjs/mapped-types';
+import { PickType } from '@nestjs/swagger';
 import { CommonOutput } from 'src/common/dtos/commonOutput.dto';
 import { User } from '../entities/user.entity';
 

@@ -1,4 +1,5 @@
 import { InternalServerErrorException } from '@nestjs/common';
+import { ApiProperty } from '@nestjs/swagger';
 import { compare, hash } from 'bcrypt';
 import { IsEmail, IsEnum, IsString } from 'class-validator';
 import { CommonEntity } from 'src/common/entities/common.entity';
@@ -12,14 +13,17 @@ enum UserRole {
 
 @Entity('user')
 export class User extends CommonEntity {
+  @ApiProperty({ example: 'test@test.com', required: true })
   @Column()
   @IsEmail()
   email: string;
 
+  @ApiProperty({ example: 'test1234', required: true })
   @Column()
   @IsString()
   password: string;
 
+  @ApiProperty({ example: 0, required: true })
   @Column({
     type: 'enum',
     enum: UserRole,

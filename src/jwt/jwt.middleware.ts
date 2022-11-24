@@ -12,12 +12,10 @@ export class JwtMiddleware implements NestMiddleware {
 
   async use(req: Request, res: Response, next: NextFunction) {
     try {
-      console.log(req.headers);
       const token = req.headers['authorization'].replace('Bearer ', '');
       const payload = this.jwtService.verify(token);
 
       if (typeof payload === 'object' && payload.hasOwnProperty('id')) {
-        console.log(payload['id']);
         const { user } = await this.usersService.getUserById(payload['id']);
         req['user'] = user;
       }
