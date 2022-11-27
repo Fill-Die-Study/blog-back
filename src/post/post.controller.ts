@@ -54,6 +54,7 @@ export class PostController {
     @Req() req: Request,
   ): Promise<PostOutput> {
     const { success, post } = await this.postService.getPostById(id);
+    console.log(post);
     const user = req.user as User;
     if (!success) {
       return {
@@ -64,7 +65,7 @@ export class PostController {
 
     if (post.user.id !== user.id) {
       return {
-        success,
+        success: false,
         error: '권한이 없습니다.',
       };
     }

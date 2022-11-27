@@ -6,6 +6,9 @@ export class CreatePostDto extends PickType(Post, [
   'title',
   'content',
   'user',
+  // 'postUrl',
+  // 'isPrivate',
+  // 'description',
 ]) {}
 
 export class PostOutput extends CommonOutput {

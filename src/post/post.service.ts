@@ -14,7 +14,9 @@ export class PostService {
 
   async getAllPost(): Promise<PostOutput> {
     try {
-      const posts = await this.postRepository.find();
+      const posts = await this.postRepository.find({
+        relations: { user: true },
+      });
       return {
         success: true,
         posts,
@@ -49,7 +51,12 @@ export class PostService {
 
   async getPostById(id: number): Promise<PostOutput> {
     try {
-      const post = await this.postRepository.findOneBy({ id });
+      const post = await this.postRepository.findOne({
+        where: {
+          id,
+        },
+        relations: { user: true },
+      });
       return {
         success: true,
         post,
