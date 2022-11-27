@@ -10,6 +10,7 @@ import {
   ManyToOne,
   OneToMany,
 } from 'typeorm';
+import sanitize from 'sanitize-html';
 
 @Entity()
 export class Post extends CommonEntity {
@@ -26,7 +27,7 @@ export class Post extends CommonEntity {
   @MaxLength(150)
   description: string;
 
-  @Column({ default: '' })
+  @Column({ type: 'text' })
   @IsString()
   content: string;
 
@@ -53,12 +54,14 @@ export class Post extends CommonEntity {
 
   @BeforeInsert()
   createPostUrl() {
-    try {
-      this.postUrl = `${this.user.id}/${this.postUrl || this.title}`;
-      console.log(this.postUrl, this.title);
-    } catch (error) {
-      throw new InternalServerErrorException();
-    }
+    this.postUrl = `${this.user.id}/${this.postUrl || this.title}`;
+  }
+
+  @BeforeInsert()
+  sanitizedHtml() {
+    this.content = sanitize(this.content, {
+      allowedTags: [...sanitize.defaults.allowedTags, 'img'],
+    });
   }
   // TODO: content html script 필터링 기능
 }
