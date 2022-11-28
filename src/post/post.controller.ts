@@ -38,12 +38,8 @@ export class PostController {
 
   @Post()
   @UseGuards(AuthGuard)
-  createPost(@Body() { title, content }: CreatePostDto, @Req() req: Request) {
-    return this.postService.createPost({
-      user: req.user as User,
-      title,
-      content,
-    });
+  createPost(@Body() createPostBody: CreatePostDto, @Req() req: Request) {
+    return this.postService.createPost(createPostBody, req.user as User);
   }
 
   @Patch('/:id')

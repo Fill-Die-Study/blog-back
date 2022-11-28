@@ -2,17 +2,23 @@ import { InternalServerErrorException } from '@nestjs/common';
 import { IsBoolean, IsNumber, IsString, MaxLength } from 'class-validator';
 import { CommonEntity } from 'src/common/entities/common.entity';
 import { User } from 'src/users/entities/user.entity';
+import { Comment } from './comment.entity';
 import {
   BeforeInsert,
+  BeforeUpdate,
   Column,
   Entity,
+  JoinTable,
   ManyToMany,
   ManyToOne,
   OneToMany,
+  Unique,
 } from 'typeorm';
 import sanitize from 'sanitize-html';
+import { Tag } from './tag.entity';
 
 @Entity()
+@Unique(['postUrl'])
 export class Post extends CommonEntity {
   @Column({ default: '' })
   @IsString()
@@ -39,29 +45,37 @@ export class Post extends CommonEntity {
   @IsNumber()
   likeCount: number;
 
-  // @ManyToMany(() => Tag)
-  // @JoinTable
-
-  // @OneToMany(() => Comment, (comment) => comment.post)
-  // comments: Comment[]
+  @OneToMany(() => Comment, (comment) => comment.post, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  comments: Comment[];
 
   @ManyToOne(() => User, (user) => user.posts)
   user: User;
+
+  @ManyToMany(() => Tag, (tag) => tag.posts)
+  @JoinTable()
+  tags: Tag[];
 
   @Column({ default: '' })
   @IsString()
   postUrl: string;
 
+  // TODO: 중복되는 postUrl이 생길 시 예외처리, Tag 추가한 이후로 안먹음
   @BeforeInsert()
+  @BeforeUpdate()
   createPostUrl() {
-    this.postUrl = `${this.user.id}/${this.postUrl || this.title}`;
+    this.postUrl =
+      this.postUrl ||
+      `${this.user.id}/${this.postUrl || this.title}-${this.id}`;
   }
 
   @BeforeInsert()
+  @BeforeUpdate()
   sanitizedHtml() {
     this.content = sanitize(this.content, {
       allowedTags: [...sanitize.defaults.allowedTags, 'img'],
     });
   }
-  // TODO: content html script 필터링 기능
 }

@@ -1,15 +1,20 @@
-import { PickType } from '@nestjs/mapped-types';
+import { OmitType, PartialType } from '@nestjs/swagger';
+import { IsArray, IsString } from 'class-validator';
 import { CommonOutput } from 'src/common/dtos/commonOutput.dto';
 import { Post } from '../entities/post.entity';
 
-export class CreatePostDto extends PickType(Post, [
-  'title',
-  'content',
+export class CreatePostDto extends OmitType(PartialType(Post), [
+  'id',
+  'createAt',
+  'deleteAt',
+  'updateAt',
   'user',
-  // 'postUrl',
-  // 'isPrivate',
-  // 'description',
-]) {}
+  'comments',
+]) {
+  @IsArray()
+  @IsString({ each: true })
+  tagNames: string[];
+}
 
 export class PostOutput extends CommonOutput {
   posts?: Post[];
