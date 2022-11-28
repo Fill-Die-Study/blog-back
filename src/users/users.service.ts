@@ -27,6 +27,14 @@ export class UsersService {
   async getUserById(id: number): Promise<UserOutput> {
     try {
       const user = await this.userRepository.findOneBy({ id });
+
+      if (!user) {
+        return {
+          success: false,
+          error: '해당 사용자를 찾을 수 없습니다.',
+        };
+      }
+
       return { success: true, user };
     } catch (error) {
       return { success: false, error };
@@ -83,7 +91,7 @@ export class UsersService {
 
   async deleteUser(email: string): Promise<UserOutput> {
     try {
-      this.userRepository.delete({ email });
+      await this.userRepository.delete({ email });
       return { success: true };
     } catch (error) {
       return { success: false, error };

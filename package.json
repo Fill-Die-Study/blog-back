@@ -97,7 +97,9 @@
       "node_modules",
       ".entity.(t|j)s",
       ".constants.(t|j)s",
-      "src/constants"
+      "src/constants",
+      ".module.(t|j)s",
+      ".dto.(t|j)s"
     ]
   }
 }
