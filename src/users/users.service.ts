@@ -39,8 +39,9 @@ export class UsersService {
     role,
   }: CreateUserDto): Promise<UserOutput> {
     try {
-      const isUser = await this.userRepository.findOneBy({ email });
-      if (isUser) {
+      const user = await this.userRepository.findOneBy({ email });
+
+      if (user) {
         return {
           success: false,
           error: '이미 같은 이메일은 가진 사용자가 존재합니다.',
@@ -52,9 +53,8 @@ export class UsersService {
         password,
         role,
       });
-      console.log(newUser);
       await this.userRepository.save(newUser);
-      return { success: true, user: newUser };
+      return { success: true };
     } catch (error) {
       return { success: false, error };
     }
