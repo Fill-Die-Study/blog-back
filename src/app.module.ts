@@ -27,7 +27,7 @@ import { PostModule } from './post/post.module';
         DATABASE_PASSWORD: Joi.string().required(),
         DATABASE_NAME: Joi.string().required(),
         JWT_SECRET: Joi.string().required(),
-        EXPRIES_IN: Joi.string(),
+        JWT_EXPIRES_IN: Joi.string(),
       }),
     }),
     TypeOrmModule.forRoot({
@@ -43,7 +43,7 @@ import { PostModule } from './post/post.module';
     }),
     JwtModule.forRoot({
       privateKey: process.env.JWT_SECRET,
-      expires_in: process.env.EXPIRES_IN,
+      expires_in: process.env.JWT_EXPIRES_IN,
     }),
     UsersModule,
     PostModule,
