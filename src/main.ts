@@ -36,6 +36,8 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(3000);
+  await app.listen(3000, () => {
+    console.log('server open PORT:', 3000);
+  });
 }
 bootstrap();
