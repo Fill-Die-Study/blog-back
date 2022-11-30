@@ -6,11 +6,10 @@ import {
   Patch,
   Param,
   Delete,
-  UseGuards,
   Req,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { Public } from 'src/auth/auth.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { CreatePostDto, PostOutput } from './dto/create-post.dto';
 import { PostService } from './post.service';
@@ -19,37 +18,36 @@ import { PostService } from './post.service';
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
+  @Public()
   @Get()
   getAllPost() {
     return this.postService.getAllPost();
   }
 
-  @Get('/me')
-  @UseGuards(AuthGuard)
-  async getAllMyPost(@Req() req: Request): Promise<PostOutput> {
-    const user = req.user as User;
-    return this.postService.getAllMyPost(user.id);
-  }
-
+  @Public()
   @Get('/:id')
   getPostById(@Param('id') id: number): Promise<PostOutput> {
     return this.postService.getPostById(id);
   }
 
+  @Get('/me')
+  async getAllMyPost(@Req() req: Request): Promise<PostOutput> {
+    const user = req.user as User;
+    return this.postService.getAllMyPost(user.id);
+  }
+
   @Post()
-  @UseGuards(AuthGuard)
   createPost(@Body() createPostBody: CreatePostDto, @Req() req: Request) {
     return this.postService.createPost(createPostBody, req.user as User);
   }
 
   @Patch('/:id')
-  @UseGuards(AuthGuard)
   async updatePost(
     @Param('id') id: number,
     @Body() { title, content }: CreatePostDto,
     @Req() req: Request,
   ): Promise<PostOutput> {
-    const { success, post } = await this.postService.getPostById(id);
+    const { post } = await this.postService.getPostById(id);
     const user = req.user as User;
     if (!success) {
       return {
@@ -74,7 +72,6 @@ export class PostController {
   }
 
   @Delete('/:id')
-  @UseGuards(AuthGuard)
   async deletePost(@Param('id') id: number, @Req() req: Request) {
     const { success, post } = await this.postService.getPostById(id);
     const user = req.user as User;

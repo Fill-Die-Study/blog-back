@@ -6,6 +6,7 @@ import {
   Patch,
   UseGuards,
   Req,
+  Param,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto, UserOutput } from './dto/create-user.dto';
@@ -20,12 +21,14 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
+import { Public } from 'src/auth/auth.decorator';
 
 @Controller('users')
 @ApiTags('Users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @Public()
   @Get()
   @ApiOperation({
     summary: '유저 전체 조회',
@@ -34,7 +37,6 @@ export class UsersController {
     description: '성공여부',
     schema: {
       example: {
-        success: true,
         users: [
           {
             id: 0,
@@ -64,6 +66,74 @@ export class UsersController {
     return this.usersService.getAllUsers();
   }
 
+  @Get('/profile')
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: '본인 프로필 조회',
+  })
+  @ApiCreatedResponse({
+    description: '성공여부',
+    schema: {
+      example: {
+        user: {
+          id: 1,
+          email: 'bb@bb.com',
+          password: 'test',
+          role: 0,
+          posts: [],
+          createAt: new Date(),
+          deleteAt: new Date(),
+          updateAt: new Date(),
+        },
+      },
+    },
+  })
+  }
+
+  @Patch('/profile')
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: '본인 프로필 수정',
+  })
+  @ApiCreatedResponse({
+    description: '성공여부',
+    schema: {
+      example: { success: true },
+    },
+  })
+  editProfile(
+    @Req() req: Request,
+    @Body() body: UpdateUserDto,
+  ): Promise<UserOutput> {
+    const { id } = req.user as User;
+    return this.usersService.updateUser(id, body);
+  }
+
+  @Public()
+  @Get('/:id')
+  @ApiOperation({ summary: '유저 선택 조회' })
+  @ApiCreatedResponse({
+    description: '성공여부',
+    schema: {
+      example: {
+        user: {
+          id: 0,
+          email: 'aa@aa.com',
+          password: 'test',
+          role: 0,
+          posts: [],
+          createAt: new Date(),
+          deleteAt: new Date(),
+          updateAt: new Date(),
+        },
+      } as UserOutput,
+    },
+  })
+  getUserById(@Param('id') id: number) {
+    return this.usersService.getUserById(id);
+  }
+
+  @Public()
   @Post()
   @ApiOperation({
     summary: '유저 생성',
@@ -72,7 +142,6 @@ export class UsersController {
     description: '성공여부',
     schema: {
       example: {
-        success: true,
         user: {
           id: 0,
           email: 'aa@aa.com',
@@ -97,6 +166,7 @@ export class UsersController {
     });
   }
 
+  @Public()
   @Post('/login')
   @ApiOperation({
     summary: '로그인',
@@ -104,58 +174,10 @@ export class UsersController {
   @ApiCreatedResponse({
     description: '성공여부',
     schema: {
-      example: { success: true, token: 'string' },
+      example: { token: 'string' },
     },
   })
   login(@Body() { email, password }: LoginDto) {
     return this.usersService.login({ email, password });
-  }
-
-  @Get('/profile')
-  @UseGuards(AuthGuard)
-  @ApiBearerAuth('access-token')
-  @ApiOperation({
-    summary: '본인 프로필 조회',
-  })
-  @ApiCreatedResponse({
-    description: '성공여부',
-    schema: {
-      example: {
-        success: true,
-        user: {
-          id: 1,
-          email: 'bb@bb.com',
-          password: 'test',
-          role: 0,
-          posts: [],
-          createAt: new Date(),
-          deleteAt: new Date(),
-          updateAt: new Date(),
-        },
-      },
-    },
-  })
-  profile(@Req() req: Request): UserOutput {
-    return { success: true, user: req.user as User };
-  }
-
-  @Patch('/profile')
-  @UseGuards(AuthGuard)
-  @ApiBearerAuth('access-token')
-  @ApiOperation({
-    summary: '본인 프로필 수정',
-  })
-  @ApiCreatedResponse({
-    description: '성공여부',
-    schema: {
-      example: { success: true },
-    },
-  })
-  editProfile(
-    @Req() req: Request,
-    @Body() body: UpdateUserDto,
-  ): Promise<UserOutput> {
-    const { id } = req.user as User;
-    return this.usersService.updateUser(id, body);
   }
 }

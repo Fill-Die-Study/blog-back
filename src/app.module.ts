@@ -12,6 +12,7 @@ import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from './jwt/jwt.module';
 import { JwtMiddleware } from './jwt/jwt.middleware';
 import { PostModule } from './post/post.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { PostModule } from './post/post.module';
       privateKey: process.env.JWT_SECRET,
       expires_in: process.env.JWT_EXPIRES_IN,
     }),
+    AuthModule,
     UsersModule,
     PostModule,
   ],
@@ -53,7 +55,7 @@ import { PostModule } from './post/post.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(JwtMiddleware).exclude('/users/login').forRoutes({
+    consumer.apply(JwtMiddleware).forRoutes({
       path: '*',
       method: RequestMethod.ALL,
     });
