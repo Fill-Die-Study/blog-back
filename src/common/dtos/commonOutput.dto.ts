@@ -1,4 +1,6 @@
+import { HttpStatus } from '@nestjs/common';
+
 export class CommonOutput {
-  success: boolean;
+  statusCode: HttpStatus;
   error?: string;
 }
