@@ -11,6 +11,7 @@ export class CreatePostDto extends OmitType(PartialType(Post), [
   'user',
   'comments',
   'tags',
+  'likeCount',
 ]) {
   @IsArray()
   @IsString({ each: true })

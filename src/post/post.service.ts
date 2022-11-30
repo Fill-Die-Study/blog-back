@@ -163,13 +163,11 @@ export class PostService {
 
   async updatePost({
     id,
-    title,
-    content,
-    user,
+    ...updatePostInfo
   }: UpdatePostDto): Promise<PostOutput> {
     try {
       console.log(id);
-      await this.postRepository.update({ id }, { title, content, user });
+      await this.postRepository.update({ id }, updatePostInfo);
       return {
         statusCode: HttpStatus.OK,
       };

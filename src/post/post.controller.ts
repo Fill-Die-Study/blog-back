@@ -14,6 +14,7 @@ import { Request } from 'express';
 import { Public } from 'src/auth/auth.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { CreatePostDto, PostOutput } from './dto/create-post.dto';
+import { UpdatePostDto } from './dto/update-post.dto';
 import { PostService } from './post.service';
 
 @Controller('posts')
@@ -46,7 +47,7 @@ export class PostController {
   @Patch('/:id')
   async updatePost(
     @Param('id') id: number,
-    @Body() { title, content }: CreatePostDto,
+    @Body() updatePostBody: UpdatePostDto,
     @Req() req: Request,
   ): Promise<PostOutput> {
     const { post } = await this.postService.getPostById(id);
@@ -59,12 +60,7 @@ export class PostController {
       throw new ForbiddenException();
     }
 
-    return this.postService.updatePost({
-      id,
-      user,
-      title,
-      content,
-    });
+    return this.postService.updatePost(updatePostBody);
   }
 
   @Delete('/:id')
