@@ -1,4 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import {
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -19,17 +24,18 @@ export class PostService {
   async getAllPost(): Promise<PostOutput> {
     try {
       const posts = await this.postRepository.find({
-        relations: { user: true },
+        relations: { user: true, comments: true, tags: true },
       });
       return {
-        success: true,
+        statusCode: HttpStatus.OK,
         posts,
       };
     } catch (error) {
-      return {
-        success: false,
-        error,
-      };
+      throw new InternalServerErrorException(`${error}`);
+      // return {
+      //   success: false,
+      //   error,
+      // };
     }
   }
 
@@ -42,14 +48,11 @@ export class PostService {
         },
       });
       return {
-        success: true,
+        statusCode: HttpStatus.OK,
         posts,
       };
     } catch (error) {
-      return {
-        success: false,
-        error,
-      };
+      throw new InternalServerErrorException(`${error}`);
     }
   }
 
@@ -61,15 +64,16 @@ export class PostService {
         },
         relations: { user: true },
       });
+
+      if (!post) {
+        throw new NotFoundException('게시글을 찾을 수 없습니다');
+      }
+
       return {
-        success: true,
+        statusCode: HttpStatus.OK,
         post,
       };
     } catch (error) {
-      return {
-        success: false,
-        error,
-      };
     }
   }
 
@@ -118,17 +122,12 @@ export class PostService {
         promiseRes.status === 'fulfilled' ? promiseRes.value : undefined,
       );
 
-      console.log(post);
+      post.tags = tags;
 
-      await this.postRepository.save(
-        this.postRepository.create({ ...post, tags }),
-      );
-      return { success: true };
+      await this.postRepository.save(post);
+      return { statusCode: HttpStatus.OK };
     } catch (error) {
-      return {
-        success: false,
-        error,
-      };
+      throw new InternalServerErrorException(`${error}`);
     }
   }
 
@@ -142,13 +141,10 @@ export class PostService {
       console.log(id);
       await this.postRepository.update({ id }, { title, content, user });
       return {
-        success: true,
+        statusCode: HttpStatus.OK,
       };
     } catch (error) {
-      return {
-        success: false,
-        error,
-      };
+      throw new InternalServerErrorException(`${error}`);
     }
   }
 
@@ -156,13 +152,10 @@ export class PostService {
     try {
       await this.postRepository.delete({ id });
       return {
-        success: true,
+        statusCode: HttpStatus.OK,
       };
     } catch (error) {
-      return {
-        success: false,
-        error,
-      };
+      throw new InternalServerErrorException(`${error}`);
     }
   }
 }

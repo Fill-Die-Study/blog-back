@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   Req,
+  NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { Public } from 'src/auth/auth.decorator';
@@ -49,18 +51,12 @@ export class PostController {
   ): Promise<PostOutput> {
     const { post } = await this.postService.getPostById(id);
     const user = req.user as User;
-    if (!success) {
-      return {
-        success,
-        error: '게시글을 찾을 수 없습니다.',
-      };
+    if (!post) {
+      throw new NotFoundException('게시글을 찾을 수 없습니다.');
     }
 
     if (post.user.id !== user.id) {
-      return {
-        success: false,
-        error: '권한이 없습니다.',
-      };
+      throw new ForbiddenException();
     }
 
     return this.postService.updatePost({
@@ -73,20 +69,14 @@ export class PostController {
 
   @Delete('/:id')
   async deletePost(@Param('id') id: number, @Req() req: Request) {
-    const { success, post } = await this.postService.getPostById(id);
+    const { post } = await this.postService.getPostById(id);
     const user = req.user as User;
-    if (!success) {
-      return {
-        success,
-        error: '게시글을 찾을 수 없습니다.',
-      };
+    if (!post) {
+      throw new NotFoundException('게시글을 찾을 수 없습니다.');
     }
 
     if (post.user.id !== user.id) {
-      return {
-        success,
-        error: '권한이 없습니다.',
-      };
+      throw new ForbiddenException();
     }
 
     return this.postService.deletePost(id);

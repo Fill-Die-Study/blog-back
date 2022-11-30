@@ -7,6 +7,7 @@ import {
   UseGuards,
   Req,
   Param,
+  HttpStatus,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto, UserOutput } from './dto/create-user.dto';
@@ -88,6 +89,8 @@ export class UsersController {
       },
     },
   })
+  profile(@Req() req: Request): UserOutput {
+    return { statusCode: HttpStatus.OK, user: req.user as User };
   }
 
   @Patch('/profile')

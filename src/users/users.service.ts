@@ -1,4 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from 'src/jwt/jwt.service';
 import { Repository } from 'typeorm';
@@ -18,9 +25,9 @@ export class UsersService {
   async getAllUsers(): Promise<UserOutput> {
     try {
       const users = await this.userRepository.find();
-      return { success: true, users };
+      return { statusCode: HttpStatus.OK, users };
     } catch (error) {
-      return { success: false, error };
+      throw new InternalServerErrorException(`${error}`);
     }
   }
 
@@ -29,15 +36,12 @@ export class UsersService {
       const user = await this.userRepository.findOneBy({ id });
 
       if (!user) {
-        return {
-          success: false,
-          error: '해당 사용자를 찾을 수 없습니다.',
-        };
+        throw new NotFoundException();
       }
 
-      return { success: true, user };
+      return { statusCode: HttpStatus.OK, user };
     } catch (error) {
-      return { success: false, error };
+      throw new InternalServerErrorException(`${error}`);
     }
   }
 
@@ -50,10 +54,7 @@ export class UsersService {
       const user = await this.userRepository.findOneBy({ email });
 
       if (user) {
-        return {
-          success: false,
-          error: '이미 같은 이메일은 가진 사용자가 존재합니다.',
-        };
+        throw new ConflictException();
       }
 
       const newUser = this.userRepository.create({
@@ -62,9 +63,9 @@ export class UsersService {
         role,
       });
       await this.userRepository.save(newUser);
-      return { success: true };
+      return { statusCode: HttpStatus.CREATED };
     } catch (error) {
-      return { success: false, error };
+      throw new InternalServerErrorException(`${error}`);
     }
   }
 
@@ -75,7 +76,7 @@ export class UsersService {
     try {
       const user = await this.userRepository.findOneBy({ id });
       if (!user) {
-        return { success: false, error: '유저를 찾을 수 없습니다.' };
+        throw new NotFoundException();
       }
 
       await this.userRepository.save({
@@ -83,18 +84,18 @@ export class UsersService {
         ...updateUserDto,
       });
 
-      return { success: true };
+      return { statusCode: HttpStatus.OK };
     } catch (error) {
-      return { success: false, error };
+      throw new InternalServerErrorException(`${error}`);
     }
   }
 
   async deleteUser(email: string): Promise<UserOutput> {
     try {
       await this.userRepository.delete({ email });
-      return { success: true };
+      return { statusCode: HttpStatus.OK };
     } catch (error) {
-      return { success: false, error };
+      throw new InternalServerErrorException(`${error}`);
     }
   }
 
@@ -102,31 +103,37 @@ export class UsersService {
     try {
       const user = await this.userRepository.findOneBy({ email });
       if (!user) {
-        return {
-          success: false,
-          error: 'Email을 정확히 입력해주세요.',
-        };
+        throw new BadRequestException('Email을 정확히 입력해주세요.');
+        // return {
+        //   success: false,
+        //   statusCode: HttpStatus.BAD_REQUEST,
+        //   error: 'Email을 정확히 입력해주세요.',
+        // };
       }
 
       // TODO: Auth로 이동
       const isValidate = await user.comparePassword(password);
       if (!isValidate) {
-        return {
-          success: false,
-          error: '비밀번호가 올바르지 않습니다.',
-        };
+        throw new BadRequestException('비밀번호가 올바르지 않습니다.');
+        // return {
+        //   success: false,
+        //   statusCode: HttpStatus.BAD_REQUEST,
+        //   error: '비밀번호가 올바르지 않습니다.',
+        // };
       }
 
       const token = this.jwtService.sign({ id: user.id });
       return {
-        success: true,
+        statusCode: HttpStatus.OK,
         token,
       };
     } catch (error) {
-      return {
-        success: false,
-        error,
-      };
+      throw new InternalServerErrorException(`${error}`);
+      // return {
+      //   success: false,
+      //   statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      //   error,
+      // };
     }
   }
 }

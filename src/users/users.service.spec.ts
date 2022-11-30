@@ -73,7 +73,7 @@ describe('UsersService', () => {
       // expect
       expect(usersRepository.find).toBeCalledTimes(1);
       expect(result).toMatchObject({
-        success: true,
+        
         users: [mockUser({}), mockUser({})],
       });
     });
@@ -116,7 +116,7 @@ describe('UsersService', () => {
       // expect
       expect(usersRepository.findOneBy).toBeCalledTimes(1);
       expect(result).toMatchObject({
-        success: true,
+        
         user: mockUser({}),
       });
     });
@@ -223,7 +223,7 @@ describe('UsersService', () => {
       // point!
       expect(usersRepository.save).toBeCalledWith(newUser);
       expect(result).toMatchObject({
-        success: true,
+        
       });
     });
 
@@ -320,7 +320,7 @@ describe('UsersService', () => {
       expect(jwtService.sign).toBeCalledTimes(1);
       expect(jwtService.sign).toBeCalledWith(expect.any(Object));
       expect(result).toMatchObject({
-        success: true,
+        
         token: mockToken,
       });
     });
