@@ -45,6 +45,8 @@ export class PostService {
         where: { user: { id: user_id } },
         relations: {
           user: true,
+          comments: true,
+          tags: true,
         },
       });
       return {
@@ -62,7 +64,11 @@ export class PostService {
         where: {
           id,
         },
-        relations: { user: true },
+        relations: {
+          user: true,
+          comments: true,
+          tags: true,
+        },
       });
 
       if (!post) {
@@ -74,6 +80,30 @@ export class PostService {
         post,
       };
     } catch (error) {
+      throw new InternalServerErrorException(`${error}`);
+    }
+  }
+
+  // TODO: tag name or tag id
+  async getPostByTag(tag_id: number): Promise<PostOutput> {
+    try {
+      const posts = await this.postRepository.find({
+        where: { tags: { id: tag_id } },
+        relations: {
+          user: true,
+          comments: true,
+          tags: true,
+        },
+      });
+
+      if (!posts) {
+        throw new NotFoundException('게시글을 찾을 수 없습니다.');
+        // return { success: false, error: '게시글을 찾을 수 없습니다.' };
+      }
+
+      return { statusCode: HttpStatus.OK, posts };
+    } catch (error) {
+      throw new InternalServerErrorException(`${error}`);
     }
   }
 

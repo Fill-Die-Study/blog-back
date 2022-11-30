@@ -1,4 +1,3 @@
-import { InternalServerErrorException } from '@nestjs/common';
 import { IsBoolean, IsNumber, IsString, MaxLength } from 'class-validator';
 import { CommonEntity } from 'src/common/entities/common.entity';
 import { User } from 'src/users/entities/user.entity';
@@ -62,13 +61,12 @@ export class Post extends CommonEntity {
   @IsString()
   postUrl: string;
 
-  // TODO: 중복되는 postUrl이 생길 시 예외처리, Tag 추가한 이후로 안먹음
+  // TODO: 중복되는 postUrl이 생길 시 예외처리
   @BeforeInsert()
   @BeforeUpdate()
   createPostUrl() {
     this.postUrl =
-      this.postUrl ||
-      `${this.user.id}/${this.postUrl || this.title}-${this.id}`;
+      this.postUrl || `${this.user.id}/${this.postUrl || this.title}`;
   }
 
   @BeforeInsert()
