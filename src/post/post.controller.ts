@@ -46,21 +46,13 @@ export class PostController {
 
   @Patch('/:id')
   async updatePost(
-    @Param('id') id: number,
+    @Param('id') postId: number,
     @Body() updatePostBody: UpdatePostDto,
     @Req() req: Request,
   ): Promise<PostOutput> {
-    const { post } = await this.postService.getPostById(id);
     const user = req.user as User;
-    if (!post) {
-      throw new NotFoundException('게시글을 찾을 수 없습니다.');
-    }
 
-    if (post.user.id !== user.id) {
-      throw new ForbiddenException();
-    }
-
-    return this.postService.updatePost(updatePostBody);
+    return this.postService.updatePost(postId, user, updatePostBody);
   }
 
   @Delete('/:id')

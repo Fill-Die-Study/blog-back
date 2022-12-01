@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   HttpStatus,
   Injectable,
   InternalServerErrorException,
@@ -11,6 +12,7 @@ import { CreatePostDto, PostOutput } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Post } from './entities/post.entity';
 import { Tag } from './entities/tag.entity';
+import { TagService } from './tag.service';
 
 @Injectable()
 export class PostService {
@@ -19,6 +21,7 @@ export class PostService {
     private readonly postRepository: Repository<Post>,
     @InjectRepository(Tag)
     private readonly tagRepository: Repository<Tag>,
+    private readonly tagService: TagService,
   ) {}
 
   async getAllPost(): Promise<PostOutput> {
@@ -31,7 +34,7 @@ export class PostService {
         posts,
       };
     } catch (error) {
-      throw new InternalServerErrorException(`${error}`);
+      throw error;
       // return {
       //   success: false,
       //   error,
@@ -54,7 +57,7 @@ export class PostService {
         posts,
       };
     } catch (error) {
-      throw new InternalServerErrorException(`${error}`);
+      throw error;
     }
   }
 
@@ -80,7 +83,7 @@ export class PostService {
         post,
       };
     } catch (error) {
-      throw new InternalServerErrorException(`${error}`);
+      throw error;
     }
   }
 
@@ -103,14 +106,11 @@ export class PostService {
 
       return { statusCode: HttpStatus.OK, posts };
     } catch (error) {
-      throw new InternalServerErrorException(`${error}`);
+      throw error;
     }
   }
 
-  async createPost(
-    createPostBody: CreatePostDto,
-    author: User,
-  ): Promise<PostOutput> {
+  async createPost(createPostBody: CreatePostDto, author: User): Promise<PostOutput> {
     try {
       const { tagNames, ...createPostInfo } = createPostBody;
 
@@ -119,60 +119,78 @@ export class PostService {
         user: author,
       });
 
-      const tagSlugs = tagNames.map((tagName) =>
-        tagName.trim().toLowerCase().replace(/ /g, '-'),
-      );
+      // if (tagNames && tagNames.length > 0) {
+      //   const tagSlugs = tagNames.map((tagName) => tagName.trim().toLowerCase().replace(/ /g, '-'));
 
-      const saveTag = async (tagSlug: string) => {
-        const tag = await this.tagRepository.findOne({
-          where: { name: tagSlug },
-          relations: { posts: true },
-        });
+      //   const saveTag = async (tagSlug: string) => {
+      //     const tag = await this.tagRepository.findOne({
+      //       where: { name: tagSlug },
+      //       relations: { posts: true },
+      //     });
 
-        let newTag: Tag;
+      //     let newTag: Tag;
 
-        if (!tag) {
-          newTag = this.tagRepository.create({
-            name: tagSlug,
-            posts: [post],
-          });
-        } else {
-          newTag = {
-            ...tag,
-            posts: [...tag.posts, post],
-          };
-        }
+      //     if (!tag) {
+      //       newTag = this.tagRepository.create({
+      //         name: tagSlug,
+      //         posts: [post],
+      //       });
+      //     } else {
+      //       newTag = {
+      //         ...tag,
+      //         posts: [...tag.posts, post],
+      //       };
+      //     }
 
-        return await this.tagRepository.save(newTag);
-      };
+      //     return await this.tagRepository.save(newTag);
+      //   };
 
-      const tags = (
-        await Promise.allSettled(tagSlugs.map((tagSlug) => saveTag(tagSlug)))
-      ).map((promiseRes) =>
-        promiseRes.status === 'fulfilled' ? promiseRes.value : undefined,
-      );
+      //   const tags = (await Promise.allSettled(tagSlugs.map((tagSlug) => saveTag(tagSlug)))).map((promiseRes) =>
+      //     promiseRes.status === 'fulfilled' ? promiseRes.value : undefined,
+      //   );
+      // }
 
-      post.tags = tags;
+      post.tags = await this.tagService.saveTags(post, tagNames);
 
       await this.postRepository.save(post);
       return { statusCode: HttpStatus.OK };
     } catch (error) {
-      throw new InternalServerErrorException(`${error}`);
+      throw error;
     }
   }
 
-  async updatePost({
-    id,
-    ...updatePostInfo
-  }: UpdatePostDto): Promise<PostOutput> {
+  async updatePost(id: number, user: User, updatePostBody: UpdatePostDto): Promise<PostOutput> {
+    const { tagNames, ...updatePostInfo } = updatePostBody;
+
     try {
-      console.log(id);
-      await this.postRepository.update({ id }, updatePostInfo);
+      const post = await this.postRepository.findOne({
+        where: {
+          id,
+        },
+        relations: {
+          user: true,
+          tags: true,
+        },
+      });
+
+      if (!post) {
+        throw new NotFoundException('게시글을 찾을 수 없습니다.');
+      }
+
+      if (post.user.id !== user.id) {
+        throw new ForbiddenException('권한이 없습니다.');
+      }
+
+      const tags = await this.tagService.saveTags(post, tagNames);
+      // post.tags = await this.tagService.saveTags(post, tagNames);
+
+      await this.postRepository.save({ ...post, ...updatePostInfo, tags });
+
       return {
         statusCode: HttpStatus.OK,
       };
     } catch (error) {
-      throw new InternalServerErrorException(`${error}`);
+      throw error;
     }
   }
 
@@ -183,7 +201,7 @@ export class PostService {
         statusCode: HttpStatus.OK,
       };
     } catch (error) {
-      throw new InternalServerErrorException(`${error}`);
+      throw error;
     }
   }
 }

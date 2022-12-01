@@ -1,5 +1,5 @@
 import { OmitType, PartialType } from '@nestjs/swagger';
-import { IsArray, IsString } from 'class-validator';
+import { IsArray, IsOptional, IsString } from 'class-validator';
 import { CommonOutput } from 'src/common/dtos/commonOutput.dto';
 import { Post } from '../entities/post.entity';
 
@@ -14,8 +14,9 @@ export class CreatePostDto extends OmitType(PartialType(Post), [
   'likeCount',
 ]) {
   @IsArray()
+  @IsOptional()
   @IsString({ each: true })
-  tagNames: string[];
+  tagNames?: string[];
 }
 
 export class PostOutput extends CommonOutput {

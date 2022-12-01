@@ -1,4 +1,4 @@
-import { IsBoolean, IsNumber, IsString, MaxLength } from 'class-validator';
+import { IsBoolean, IsNumber, IsString, MaxLength, ValidateIf, IsOptional } from 'class-validator';
 import { CommonEntity } from 'src/common/entities/common.entity';
 import { User } from 'src/users/entities/user.entity';
 import { Comment } from './comment.entity';
@@ -15,6 +15,7 @@ import {
 } from 'typeorm';
 import sanitize from 'sanitize-html';
 import { Tag } from './tag.entity';
+import { Optional } from '@nestjs/common';
 
 @Entity()
 @Unique(['postUrl'])
@@ -23,26 +24,35 @@ export class Post extends CommonEntity {
   @IsString()
   title: string;
 
-  @Column({ default: '' })
-  @IsString()
-  thumbnailUrl: string;
-
-  @Column({ default: '' })
-  @IsString()
-  @MaxLength(150)
-  description: string;
-
   @Column({ type: 'text' })
   @IsString()
   content: string;
 
-  @Column({ default: false })
+  @Column({ default: '' })
+  @IsOptional()
+  @IsString()
+  thumbnailUrl: string;
+
+  @Column({ default: '' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(150)
+  description: string;
+
+  @Column({ default: false, nullable: true })
+  @IsOptional()
   @IsBoolean()
-  isPrivate: boolean;
+  isPrivate!: boolean;
 
   @Column({ default: 0 })
+  @IsOptional()
   @IsNumber()
   likeCount: number;
+
+  @Column({ default: '' })
+  @IsOptional()
+  @IsString()
+  postUrl: string;
 
   @OneToMany(() => Comment, (comment) => comment.post, {
     nullable: true,
@@ -57,16 +67,11 @@ export class Post extends CommonEntity {
   @JoinTable()
   tags: Tag[];
 
-  @Column({ default: '' })
-  @IsString()
-  postUrl: string;
-
   // TODO: 중복되는 postUrl이 생길 시 예외처리
   @BeforeInsert()
   @BeforeUpdate()
   createPostUrl() {
-    this.postUrl =
-      this.postUrl || `${this.user.id}/${this.postUrl || this.title}`;
+    this.postUrl = this.postUrl || `${this.user.id}/${this.postUrl || this.title}`;
   }
 
   @BeforeInsert()

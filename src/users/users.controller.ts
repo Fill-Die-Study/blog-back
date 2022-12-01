@@ -1,14 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  UseGuards,
-  Req,
-  Param,
-  HttpStatus,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, UseGuards, Req, Param, HttpStatus } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto, UserOutput } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -16,12 +6,7 @@ import { LoginDto } from './dto/login.dto';
 import { Request } from 'express';
 import { User } from './entities/user.entity';
 import { AuthGuard } from 'src/auth/auth.guard';
-import {
-  ApiBearerAuth,
-  ApiCreatedResponse,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Public } from 'src/auth/auth.decorator';
 
 @Controller('users')
@@ -104,12 +89,10 @@ export class UsersController {
       example: { success: true },
     },
   })
-  editProfile(
-    @Req() req: Request,
-    @Body() body: UpdateUserDto,
-  ): Promise<UserOutput> {
-    const { id } = req.user as User;
-    return this.usersService.updateUser(id, body);
+  editProfile(@Req() req: Request, @Body() body: UpdateUserDto): Promise<UserOutput> {
+    const user = req.user as User;
+
+    return this.usersService.updateUser(user, body);
   }
 
   @Public()
@@ -180,7 +163,9 @@ export class UsersController {
       example: { token: 'string' },
     },
   })
-  login(@Body() { email, password }: LoginDto) {
+  login(@Body() loginInfo: LoginDto) {
+    console.log(loginInfo);
+    const { email, password } = loginInfo;
     return this.usersService.login({ email, password });
   }
 }
