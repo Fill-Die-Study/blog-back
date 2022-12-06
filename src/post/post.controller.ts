@@ -28,9 +28,15 @@ export class PostController {
   }
 
   @Public()
-  @Get('/:id')
-  getPostById(@Param('id') id: number): Promise<PostOutput> {
-    return this.postService.getPostById(id);
+  @Get('/user/:id')
+  getPostByUserId(@Param('id') id: number) {
+    return this.postService.getPostByUserId(id);
+  }
+
+  @Public()
+  @Get('/:userId/:postSlug')
+  getPostByUrl(@Param('userId') userId: string, @Param('postSlug') postSlug: string): Promise<PostOutput> {
+    return this.postService.getPostByUrl(`${userId}/${postSlug}`);
   }
 
   @Get('/me')
@@ -39,12 +45,18 @@ export class PostController {
     return this.postService.getAllMyPost(user.id);
   }
 
+  @Public()
+  @Get('/:id')
+  async getPostById(@Param('id') id: number) {
+    return this.postService.getPostById(id);
+  }
+
   @Post()
   createPost(@Body() createPostBody: CreatePostDto, @Req() req: Request) {
     return this.postService.createPost(createPostBody, req.user as User);
   }
 
-  @Patch('/:id')
+  @Post('/:id')
   async updatePost(
     @Param('id') postId: number,
     @Body() updatePostBody: UpdatePostDto,

@@ -6,6 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { throws } from 'assert';
 import { User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreatePostDto, PostOutput } from './dto/create-post.dto';
@@ -55,6 +56,57 @@ export class PostService {
       return {
         statusCode: HttpStatus.OK,
         posts,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getPostByUserId(id: number): Promise<PostOutput> {
+    try {
+      const posts = await this.postRepository.find({
+        where: {
+          user: { id },
+        },
+        relations: {
+          comments: true,
+          tags: true,
+        },
+      });
+
+      if (!posts) {
+        throw new NotFoundException('게시글을 찾을 수 없습니다.');
+      }
+
+      return {
+        statusCode: HttpStatus.OK,
+        posts,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getPostByUrl(postUrl: string): Promise<PostOutput> {
+    try {
+      const post = await this.postRepository.findOne({
+        where: {
+          postUrl,
+        },
+        relations: {
+          user: true,
+          comments: true,
+          tags: true,
+        },
+      });
+
+      if (!post) {
+        throw new NotFoundException('게시글을 찾을 수 없습니다');
+      }
+
+      return {
+        statusCode: HttpStatus.OK,
+        post,
       };
     } catch (error) {
       throw error;
@@ -118,37 +170,6 @@ export class PostService {
         ...createPostInfo,
         user: author,
       });
-
-      // if (tagNames && tagNames.length > 0) {
-      //   const tagSlugs = tagNames.map((tagName) => tagName.trim().toLowerCase().replace(/ /g, '-'));
-
-      //   const saveTag = async (tagSlug: string) => {
-      //     const tag = await this.tagRepository.findOne({
-      //       where: { name: tagSlug },
-      //       relations: { posts: true },
-      //     });
-
-      //     let newTag: Tag;
-
-      //     if (!tag) {
-      //       newTag = this.tagRepository.create({
-      //         name: tagSlug,
-      //         posts: [post],
-      //       });
-      //     } else {
-      //       newTag = {
-      //         ...tag,
-      //         posts: [...tag.posts, post],
-      //       };
-      //     }
-
-      //     return await this.tagRepository.save(newTag);
-      //   };
-
-      //   const tags = (await Promise.allSettled(tagSlugs.map((tagSlug) => saveTag(tagSlug)))).map((promiseRes) =>
-      //     promiseRes.status === 'fulfilled' ? promiseRes.value : undefined,
-      //   );
-      // }
 
       post.tags = await this.tagService.saveTags(post, tagNames);
 
