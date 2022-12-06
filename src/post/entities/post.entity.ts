@@ -71,7 +71,7 @@ export class Post extends CommonEntity {
   @BeforeInsert()
   @BeforeUpdate()
   createPostUrl() {
-    this.postUrl = this.postUrl || `${this.user.id}/${this.postUrl || this.title}`;
+    this.postUrl = `${this.user.id}/${this.postUrl || this.title}`;
   }
 
   @BeforeInsert()
