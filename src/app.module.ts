@@ -1,9 +1,4 @@
-import {
-  MiddlewareConsumer,
-  Module,
-  NestModule,
-  RequestMethod,
-} from '@nestjs/common';
+import { ClassSerializerInterceptor, MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import * as Joi from 'joi';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module';
@@ -13,6 +8,7 @@ import { JwtModule } from './jwt/jwt.module';
 import { JwtMiddleware } from './jwt/jwt.middleware';
 import { PostModule } from './post/post.module';
 import { AuthModule } from './auth/auth.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -51,7 +47,7 @@ import { AuthModule } from './auth/auth.module';
     PostModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [{ provide: APP_INTERCEPTOR, useClass: ClassSerializerInterceptor }],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

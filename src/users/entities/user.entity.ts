@@ -6,6 +6,7 @@ import { CommonEntity } from 'src/common/entities/common.entity';
 import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany } from 'typeorm';
 import { Post } from '../../post/entities/post.entity';
 import { Comment } from '../../post/entities/comment.entity';
+import { Exclude } from 'class-transformer';
 
 enum UserRole {
   USER,
@@ -22,6 +23,7 @@ export class User extends CommonEntity {
   @ApiProperty({ example: 'test1234', required: true })
   @Column()
   @IsString()
+  @Exclude()
   password: string;
 
   @ApiProperty({ example: 0, required: true })
