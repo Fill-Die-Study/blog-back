@@ -9,6 +9,7 @@ import { JwtMiddleware } from './jwt/jwt.middleware';
 import { PostModule } from './post/post.module';
 import { AuthModule } from './auth/auth.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { CommentModule } from './comment/comment.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
     AuthModule,
     UsersModule,
     PostModule,
+    CommentModule,
   ],
   controllers: [],
   providers: [{ provide: APP_INTERCEPTOR, useClass: ClassSerializerInterceptor }],

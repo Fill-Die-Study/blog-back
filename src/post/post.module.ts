@@ -10,5 +10,6 @@ import { TagService } from './tag.service';
   imports: [TypeOrmModule.forFeature([Post, Tag])],
   controllers: [PostController],
   providers: [PostService, TagService],
+  exports: [PostService],
 })
 export class PostModule {}

@@ -121,7 +121,7 @@ export class PostService {
         },
         relations: {
           user: true,
-          comments: true,
+          comments: { author: true },
           tags: true,
         },
       });

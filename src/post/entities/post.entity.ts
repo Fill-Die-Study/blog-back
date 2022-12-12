@@ -1,7 +1,7 @@
 import { IsBoolean, IsNumber, IsString, MaxLength, ValidateIf, IsOptional } from 'class-validator';
 import { CommonEntity } from 'src/common/entities/common.entity';
 import { User } from 'src/users/entities/user.entity';
-import { Comment } from './comment.entity';
+import { Comment } from '../../comment/entities/comment.entity';
 import {
   BeforeInsert,
   BeforeUpdate,

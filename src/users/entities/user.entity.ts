@@ -5,7 +5,7 @@ import { IsEmail, IsEnum, IsString } from 'class-validator';
 import { CommonEntity } from 'src/common/entities/common.entity';
 import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany } from 'typeorm';
 import { Post } from '../../post/entities/post.entity';
-import { Comment } from '../../post/entities/comment.entity';
+import { Comment } from '../../comment/entities/comment.entity';
 import { Exclude } from 'class-transformer';
 
 enum UserRole {
