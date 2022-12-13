@@ -1,4 +1,4 @@
-import { OmitType, PickType } from '@nestjs/swagger';
+import { ApiProperty, OmitType, PickType } from '@nestjs/swagger';
 import { IsArray, IsOptional, IsString } from 'class-validator';
 import { Post } from '../entities/post.entity';
 
@@ -10,6 +10,7 @@ export class UpdatePostDto extends PickType(Post, [
   'isPrivate',
   'postUrl',
 ]) {
+  @ApiProperty({ example: ['tag1', 'tag2'], nullable: true })
   @IsArray()
   @IsOptional()
   @IsString({ each: true })
