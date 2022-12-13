@@ -10,6 +10,7 @@ import { PostModule } from './post/post.module';
 import { AuthModule } from './auth/auth.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { CommentModule } from './comment/comment.module';
+import { dataSourceOption } from './database/data-source';
 
 @Module({
   imports: [
@@ -28,17 +29,7 @@ import { CommentModule } from './comment/comment.module';
         JWT_EXPIRES_IN: Joi.string(),
       }),
     }),
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: process.env.DATABASE_HOST,
-      port: Number(process.env.DATABASE_PORT || 3306),
-      username: process.env.DATABASE_USER,
-      password: process.env.DATABASE_PASSWORD,
-      database: process.env.DATABASE_NAME,
-      entities: ['dist/**/*.entity.{ts,js}'],
-      logging: true,
-      synchronize: process.env.NODE_ENV === 'dev',
-    }),
+    TypeOrmModule.forRoot(dataSourceOption),
     JwtModule.forRoot({
       privateKey: process.env.JWT_SECRET,
       expires_in: process.env.JWT_EXPIRES_IN,
