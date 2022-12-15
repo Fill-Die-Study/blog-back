@@ -15,9 +15,6 @@ WORKDIR /usr/src/app
 
 COPY --from=builder /app ./
 
-RUN rm .env
-RUN COPY .env.prod .env
-
 EXPOSE 3000
 
 CMD [ "yarn", "start:prod" ]
