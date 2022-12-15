@@ -27,5 +27,5 @@ jobs:
         uses: docker/build-push-action@v3.2.0
         with:
           push: true
-          tags: arkc1009/blog-back:${GITHUB_SHA::7}
+          tags: arkc1009/blog-back:latest
 
